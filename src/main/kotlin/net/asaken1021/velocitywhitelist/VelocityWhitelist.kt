@@ -65,7 +65,7 @@ class VelocityWhitelist @Inject constructor(private val server: ProxyServer, log
             .plugin(this)
             .build()
 
-        val commandToRegister: BrigadierCommand = VelocityWhitelistCommand(server, whitelistConfig).createBrigadierCommand(server)
+        val commandToRegister: BrigadierCommand = VelocityWhitelistCommand(whitelistConfig).createBrigadierCommand(server)
         commandManager.register(commandMeta, commandToRegister)
     }
 

@@ -19,7 +19,6 @@ import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.format.NamedTextColor
 
 class VelocityWhitelistCommand(
-    private val server: ProxyServer,
     private val config: VelocityWhitelistConfig
 ) {
     fun createBrigadierCommand(proxy: ProxyServer): BrigadierCommand {
@@ -102,7 +101,7 @@ class VelocityWhitelistCommand(
                         }
                         VelocityWhitelistCommands.VERSION.toString() -> {
 
-                            val plugin: PluginDescription = server.pluginManager.getPlugin("velocitywhitelist").get().description
+                            val plugin: PluginDescription = proxy.pluginManager.getPlugin("velocitywhitelist").get().description
                             context.source.sendMessage(text {
                                 content("Name: ${plugin.name.get()}\n")
                             } + text {
