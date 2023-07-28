@@ -19,8 +19,6 @@ repositories {
 }
 
 dependencies {
-    implementation("net.kyori:adventure-api:4.14.0")
-    implementation("net.kyori:adventure-text-minimessage:4.14.0")
     implementation("net.kyori:adventure-extra-kotlin:4.14.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
     testImplementation(kotlin("test"))

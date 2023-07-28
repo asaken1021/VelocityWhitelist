@@ -74,7 +74,7 @@ class VelocityWhitelist @Inject constructor(private val server: ProxyServer, log
         server.eventManager.unregisterListeners(this)
 
         val commandManager: CommandManager = server.commandManager
-        val commandMeta: CommandMeta = server.commandManager.metaBuilder("vwl")
+        val commandMeta: CommandMeta = commandManager.metaBuilder("vwl")
             .plugin(this)
             .build()
 
