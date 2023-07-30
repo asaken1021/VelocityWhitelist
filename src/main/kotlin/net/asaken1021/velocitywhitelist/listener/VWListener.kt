@@ -3,16 +3,16 @@ package net.asaken1021.velocitywhitelist.listener
 import com.velocitypowered.api.event.ResultedEvent
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.connection.LoginEvent
-import net.asaken1021.velocitywhitelist.util.Player
-import net.asaken1021.velocitywhitelist.util.VelocityWhitelistConfig
-import net.asaken1021.velocitywhitelist.util.VelocityWhitelistMojangAPI
+import net.asaken1021.velocitywhitelist.util.serializable.Player
+import net.asaken1021.velocitywhitelist.util.serializable.VWConfig
+import net.asaken1021.velocitywhitelist.util.mojangapi.VWMojangAPI
 import net.kyori.adventure.extra.kotlin.text
 import net.kyori.adventure.text.format.NamedTextColor
 
-class VelocityWhitelistListener(
-    private val config: VelocityWhitelistConfig
+class VWListener(
+    private val config: VWConfig
 ) {
-    private val mojangAPI = VelocityWhitelistMojangAPI()
+    private val mojangAPI = VWMojangAPI()
 
     @Subscribe
     private fun onPlayerLogin(event: LoginEvent) {

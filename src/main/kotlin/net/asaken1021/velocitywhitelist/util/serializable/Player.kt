@@ -1,4 +1,4 @@
-package net.asaken1021.velocitywhitelist.util
+package net.asaken1021.velocitywhitelist.util.serializable
 
 import kotlinx.serialization.Serializable
 

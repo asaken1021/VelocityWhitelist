@@ -33,3 +33,17 @@ tasks.test {
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "17"
 }
+
+tasks.jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from(
+        configurations.runtimeClasspath.get().map {
+            if (it.isDirectory) it
+            else {
+                println(it.name)
+                if (it.name.startsWith("kotlin-")) return@map zipTree(it) else { return@map null }
+            }
+        }
+    )
+}

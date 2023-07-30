@@ -12,19 +12,29 @@ import com.velocitypowered.api.command.BrigadierCommand
 import com.velocitypowered.api.command.CommandSource
 import com.velocitypowered.api.plugin.PluginDescription
 import com.velocitypowered.api.proxy.ProxyServer
-import net.asaken1021.velocitywhitelist.util.*
+import net.asaken1021.velocitywhitelist.util.command.VWCommand
+import net.asaken1021.velocitywhitelist.util.command.VWCommandUsage
+import net.asaken1021.velocitywhitelist.util.mojangapi.PlayerNotFoundException
+import net.asaken1021.velocitywhitelist.util.mojangapi.VWMojangAPI
+import net.asaken1021.velocitywhitelist.util.serializable.Player
+import net.asaken1021.velocitywhitelist.util.serializable.VWConfig
 import net.kyori.adventure.extra.kotlin.plus
 import net.kyori.adventure.extra.kotlin.text
 import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.format.NamedTextColor
 
-class VelocityWhitelistCommand(
-    private val config: VelocityWhitelistConfig
+class VWCommand(
+    private val config: VWConfig
 ) {
+    private val command: String = "vwl"
+    private val commandPermission: String = "$command.modify"
+
+    private val commandUsage: VWCommandUsage = VWCommandUsage()
+
     fun createBrigadierCommand(proxy: ProxyServer): BrigadierCommand {
         val commandNode: LiteralCommandNode<CommandSource> = LiteralArgumentBuilder
-            .literal<CommandSource>("vwl")
-            .requires { commandSource: CommandSource -> commandSource.hasPermission("vwl.modify") }
+            .literal<CommandSource>(command)
+            .requires { commandSource: CommandSource -> commandSource.hasPermission(commandPermission) }
             .executes { context: CommandContext<CommandSource> ->
                 val source: CommandSource = context.source
                 val message: TextComponent = text {
@@ -36,7 +46,7 @@ class VelocityWhitelistCommand(
             }
             .then(RequiredArgumentBuilder.argument<CommandSource, String>("arg1", StringArgumentType.word())
                 .suggests { _: CommandContext<CommandSource>, builder: SuggestionsBuilder ->
-                    VelocityWhitelistCommands.entries.forEach { entry: VelocityWhitelistCommands ->
+                    VWCommand.entries.forEach { entry: VWCommand ->
                         builder.suggest(
                             entry.name.lowercase()
                         )
@@ -47,21 +57,21 @@ class VelocityWhitelistCommand(
                     val arg1: String = context.getArgument("arg1", String::class.java)
 
                     when (arg1.uppercase()) {
-                        VelocityWhitelistCommands.ENABLE.toString() -> {
+                        VWCommand.ENABLE.toString() -> {
                             config.enabled = true
                             context.source.sendMessage(text {
                                 content("Whitelist enabled")
                                 color(NamedTextColor.AQUA)
                             })
                         }
-                        VelocityWhitelistCommands.DISABLE.toString() -> {
+                        VWCommand.DISABLE.toString() -> {
                             config.enabled = false
                             context.source.sendMessage((text {
                                 content("Whitelist disabled")
                                 color(NamedTextColor.LIGHT_PURPLE)
                             }))
                         }
-                        VelocityWhitelistCommands.LIST.toString() -> {
+                        VWCommand.LIST.toString() -> {
                             context.source.sendMessage(text {
                                 if (config.players.isEmpty()) {
                                     content("There are no whitelisted players")
@@ -82,7 +92,7 @@ class VelocityWhitelistCommand(
                                 }
                             })
                         }
-                        VelocityWhitelistCommands.STATUS.toString() -> {
+                        VWCommand.STATUS.toString() -> {
                             context.source.sendMessage(text {
                                 content("Whitelist is ")
                                 color(NamedTextColor.YELLOW)
@@ -99,7 +109,7 @@ class VelocityWhitelistCommand(
                                 color(NamedTextColor.YELLOW)
                             })
                         }
-                        VelocityWhitelistCommands.VERSION.toString() -> {
+                        VWCommand.VERSION.toString() -> {
 
                             val plugin: PluginDescription = proxy.pluginManager.getPlugin("velocitywhitelist").get().description
                             context.source.sendMessage(text {
@@ -112,16 +122,25 @@ class VelocityWhitelistCommand(
                                 content("Authors: ")
                                 plugin.authors.forEachIndexed { index: Int, author: String ->
                                     this.append(text {
+                                        content("$author")
+
                                         if ((index + 1) == plugin.authors.count()) {
-                                            content("$author\n")
+                                            this.append(text {
+                                                content("\n")
+                                            })
                                         } else {
-                                            content("$author, ")
+                                            this.append(text {
+                                                content(", ")
+                                            })
                                         }
                                     })
                                 }
                             } + text {
                                 content("URL: ${plugin.url.get()}")
                             })
+                        }
+                        else -> {
+                            sendCommandUsage(context.source)
                         }
                     }
 
@@ -131,10 +150,10 @@ class VelocityWhitelistCommand(
                     .executes { context: CommandContext<CommandSource> ->
                         val arg1: String = context.getArgument("arg1", String::class.java)
                         val arg2: String = context.getArgument("arg2", String::class.java)
-                        val mojangAPI = VelocityWhitelistMojangAPI()
+                        val mojangAPI = VWMojangAPI()
 
                         when (arg1.uppercase()) {
-                            VelocityWhitelistCommands.ADD.toString() -> {
+                            VWCommand.ADD.toString() -> {
                                 try {
                                     val player = mojangAPI.getPlayer(arg2)
                                     if (!config.players.contains(player)) {
@@ -156,7 +175,7 @@ class VelocityWhitelistCommand(
                                     })
                                 }
                             }
-                            VelocityWhitelistCommands.REMOVE.toString() -> {
+                            VWCommand.REMOVE.toString() -> {
                                 try {
                                     if (config.players.remove(mojangAPI.getPlayer(arg2))) {
                                         context.source.sendMessage(text {
@@ -185,5 +204,23 @@ class VelocityWhitelistCommand(
             .build()
 
         return BrigadierCommand(commandNode)
+    }
+
+    private fun sendCommandUsage(source: CommandSource) {
+        source.sendMessage(text {
+            content("VelocityWhitelist Commands:\n")
+        } + text {
+            VWCommand.entries.forEachIndexed { index: Int, entry: VWCommand ->
+                this.append(text {
+                    content("/$command ${entry.name.lowercase()} ${commandUsage.getCommmandUsage(entry)}")
+
+                    if ((index + 1) < VWCommand.entries.count()) {
+                        this.append(text {
+                            content("\n")
+                        })
+                    }
+                })
+            }
+        })
     }
 }
