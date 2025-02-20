@@ -36,7 +36,7 @@ class VelocityWhitelistImpl @Inject constructor(
 
         val commandManager: CommandManager = server.commandManager
         val commandMeta: CommandMeta = commandManager.metaBuilder("vwl")
-            .plugin(this)
+            .plugin(plugin)
             .build()
 
         val commandToRegister: BrigadierCommand = VWCommand(whitelistConfig).createBrigadierCommand(server)
@@ -48,7 +48,7 @@ class VelocityWhitelistImpl @Inject constructor(
 
         val commandManager: CommandManager = server.commandManager
         val commandMeta: CommandMeta = commandManager.metaBuilder("vwl")
-            .plugin(this)
+            .plugin(plugin)
             .build()
 
         commandManager.unregister(commandMeta)
